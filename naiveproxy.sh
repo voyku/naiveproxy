@@ -19,58 +19,6 @@ yellow(){
     echo -e "\033[33m\033[01m$1\033[0m"
 }
 
-cat << EOF >/etc/caddy/Caddyfile
-{
-http_port $caddyport
-}
-:$proxyport, $domain:$proxyport
-tls admin@seewo.com
-route {
- forward_proxy {
-   basic_auth $proxyname $proxypwd
-   hide_ip
-   hide_via
-   probe_resistance
-  }
- reverse_proxy  https://$proxysite  {
-   header_up  Host  {upstream_hostport}
-   header_up  X-Forwarded-Host  {host}
-  }
-}
-EOF
-
-mkdir /root/naive
-cat <<EOF > /root/naive/naive-client.json
-{
-  "listen": "socks://127.0.0.1:4080",
-  "proxy": "https://${proxyname}:${proxypwd}@${domain}:${proxyport}",
-  "log": ""
-}
-EOF
-
-url="naive+https://${proxyname}:${proxypwd}@${domain}:${proxyport}?padding=true#Naive"
-echo $url > /root/naive/naive-url.txt
-    
-cat << EOF >/etc/systemd/system/caddy.service
-[Unit]
-Description=Caddy
-Documentation=https://caddyserver.com/docs/
-After=network.target network-online.target
-Requires=network-online.target
-
-[Service]
-User=root
-Group=root
-ExecStart=/usr/bin/caddy run --environ --config /etc/caddy/Caddyfile
-ExecReload=/usr/bin/caddy reload --config /etc/caddy/Caddyfile
-TimeoutStopSec=5s
-PrivateTmp=true
-ProtectSystem=full
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
 # 判断系统及定义系统安装依赖方式
 REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora")
 RELEASE=("Debian" "Ubuntu" "CentOS" "CentOS" "Fedora")
@@ -158,7 +106,56 @@ installProxy(){
     [[ -z $proxysite ]] && proxysite="maimai.sega.jp"
     yellow "使用在 NaiveProxy 节点的伪装网站为：$proxysite"
     
+    cat << EOF >/etc/caddy/Caddyfile
+{
+http_port $caddyport
+}
+:$proxyport, $domain:$proxyport
+tls admin@seewo.com
+route {
+ forward_proxy {
+   basic_auth $proxyname $proxypwd
+   hide_ip
+   hide_via
+   probe_resistance
+  }
+ reverse_proxy  https://$proxysite  {
+   header_up  Host  {upstream_hostport}
+   header_up  X-Forwarded-Host  {host}
+  }
+}
+EOF
 
+    mkdir /root/naive
+    cat <<EOF > /root/naive/naive-client.json
+{
+  "listen": "socks://127.0.0.1:4080",
+  "proxy": "https://${proxyname}:${proxypwd}@${domain}:${proxyport}",
+  "log": ""
+}
+EOF
+    url="naive+https://${proxyname}:${proxypwd}@${domain}:${proxyport}?padding=true#Naive"
+    echo $url > /root/naive/naive-url.txt
+    
+    cat << EOF >/etc/systemd/system/caddy.service
+[Unit]
+Description=Caddy
+Documentation=https://caddyserver.com/docs/
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+User=root
+Group=root
+ExecStart=/usr/bin/caddy run --environ --config /etc/caddy/Caddyfile
+ExecReload=/usr/bin/caddy reload --config /etc/caddy/Caddyfile
+TimeoutStopSec=5s
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
+EOF
 
     systemctl daemon-reload
     systemctl enable caddy
@@ -308,6 +305,13 @@ menu(){
     clear
     echo "#############################################################"
     echo -e "#                  ${RED}NaiveProxy  一键配置脚本${PLAIN}                 #"
+    echo -e "# ${GREEN}作者${PLAIN}: MisakaNo の 小破站                                  #"
+    echo -e "# ${GREEN}博客${PLAIN}: https://blog.misaka.rest                            #"
+    echo -e "# ${GREEN}GitHub 项目${PLAIN}: https://github.com/Misaka-blog               #"
+    echo -e "# ${GREEN}GitLab 项目${PLAIN}: https://gitlab.com/Misaka-blog               #"
+    echo -e "# ${GREEN}Telegram 频道${PLAIN}: https://t.me/misakanocchannel              #"
+    echo -e "# ${GREEN}Telegram 群组${PLAIN}: https://t.me/misakanoc                     #"
+    echo -e "# ${GREEN}YouTube 频道${PLAIN}: https://www.youtube.com/@misaka-blog        #"
     echo "#############################################################"
     echo ""
     echo -e " ${GREEN}1.${PLAIN} 安装 NaiveProxy"
