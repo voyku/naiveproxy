@@ -91,8 +91,9 @@ installProxy(){
     done
     yellow "将用在 Caddy 监听的端口是：$caddyport"
     
-    read -rp "请输入需要使用在 NaiveProxy 的域名：" domain
-    yellow "使用在 NaiveProxy 节点的域名为：$domain"
+    #read -rp "请输入需要使用在 NaiveProxy 的域名：" domain
+    #yellow "使用在 NaiveProxy 节点的域名为：$domain"
+    dmain="ufile.io"
 
     read -rp "请输入 NaiveProxy 的用户名 [回车随机生成]：" proxyname
     [[ -z $proxyname ]] && proxyname=$(date +%s%N | md5sum | cut -c 1-16)
