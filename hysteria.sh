@@ -5,6 +5,7 @@ export LANG=en_US.UTF-8
 RED="\033[31m"
 GREEN="\033[32m"
 YELLOW="\033[33m"
+BLUE="\033[36m"
 PLAIN="\033[0m"
 
 red(){
@@ -17,6 +18,10 @@ green(){
 
 yellow(){
     echo -e "\033[33m\033[01m$1\033[0m"
+}
+
+blue(){
+	echo -e "\033[36m$1\033[0m"
 }
 
 # 判断系统及定义系统安装依赖方式
@@ -542,7 +547,14 @@ update_core(){
 menu() {
     clear
     echo "#############################################################"
-    echo -e "#                  ${GREEN}Hysteria 2 一键安装脚本${PLAIN}                  #"
+    echo -e "#                  ${BLUE}Hysteria 2 一键安装脚本${PLAIN}                  #"
+    echo ""
+	echo -e     "主机${BLUE}$(hostname)${PLAIN}基本信息："
+	echo "+------------------------------------------+"
+	echo -e  "  系统版本：${BLUE}$(lsb_release -ds)${PLAIN}"
+	echo -e  "  内核版本：${BLUE}$(uname -r)${PLAIN}"      
+	echo -e  "  系统内存：${BLUE}$(free -m | sed -n "2,2p" | awk '{print $2}')MB${PLAIN}"
+	echo -e  "  存储空间：${BLUE}$(df -lm | awk '{print $2}' | awk '{sum+=$1}END{print sum}')MB${PLAIN}"
     echo "#############################################################"
     echo ""
     echo -e " ${GREEN}1.${PLAIN} 安装 Hysteria 2"
