@@ -159,8 +159,8 @@ installProxy(){
     [[ -z $proxypwd ]] && proxypwd=$(date +%s%N | md5sum | cut -c 1-16)
     yellow "使用在 NaiveProxy 节点的密码为：$proxypwd"
 
-    read -rp "请输入 NaiveProxy 的伪装网站地址 （去除https://） [回车世嘉maimai日本网站]：" proxysite
-    [[ -z $proxysite ]] && proxysite="maimai.sega.jp"
+    read -rp "请输入 NaiveProxy 的伪装网站地址 （去除https://） [回车日本网盘infini-cloud.net]：" proxysite
+    [[ -z $proxysite ]] && proxysite="infini-cloud.net"
     yellow "使用在 NaiveProxy 节点的伪装网站为：$proxysite"
     
     cat << EOF >/etc/caddy/Caddyfile
