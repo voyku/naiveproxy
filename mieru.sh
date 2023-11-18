@@ -244,7 +244,7 @@ show_conf(){
 menu() {
     clear
     echo "#############################################################"
-    echo -e "#                   ${RED}mieru 一键安装脚本${PLAIN}                      #"
+    echo -e "#                   ${BLUE}mieru 一键安装脚本${PLAIN}                      #"
     echo ""
 	echo -e     "主机${BLUE}$(hostname)${PLAIN}基本信息："
 	echo "+------------------------------------------+"
