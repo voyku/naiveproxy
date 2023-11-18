@@ -4,3 +4,6 @@
 wget -N --no-check-certificate https://raw.githubusercontent.com/voyku/naiveproxy/main/naiveproxy.sh && bash naiveproxy.sh
 ```
 
+```shell
+wget -N --no-check-certificate https://raw.githubusercontent.com/voyku/naiveproxy/main/hysteria.sh && bash naiveproxy.sh
+```
