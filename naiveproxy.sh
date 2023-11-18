@@ -7,17 +7,10 @@ GREEN="\033[32m"
 YELLOW="\033[33m"
 PLAIN="\033[0m"
 
-red(){
-    echo -e "\033[31m\033[01m$1\033[0m"
-}
-
-green(){
-    echo -e "\033[32m\033[01m$1\033[0m"
-}
-
-yellow(){
-    echo -e "\033[33m\033[01m$1\033[0m"
-}
+red(){echo -e "\033[31m\033[01m$1\033[0m"}
+green(){echo -e "\033[32m\033[01m$1\033[0m"}
+yellow(){echo -e "\033[33m\033[01m$1\033[0m"}
+readp(){ read -p "$(yellow "$1")" $2;}
 
 # 判断系统及定义系统安装依赖方式
 REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora")
@@ -49,25 +42,74 @@ if [[ -z $(type -P curl) ]]; then
 fi
 
 archAffix(){
-    case "$(uname -m)" in
-        x86_64 | amd64 ) echo 'amd64' ;;
-        armv8 | arm64 | aarch64 ) echo 'arm64' ;;
-        s390x ) echo 's390x' ;;
-        * ) red "不支持的CPU架构!" && exit 1 ;;
-    esac
+case $(uname -m) in
+'amd64' | x86_64)
+    caddy_arch="amd64"
+    ;;
+*aarch64* | *armv8*)
+    caddy_arch="arm64"
+    ;;
+*)
+esac
+}
+
+get_caddy(){
+readp "1. 使用已编译好的版本
+2. 自动编译版本
+请选择：" chcaddynaive
+if [ -z "$chcaddynaive" ] || [ $chcaddynaive == "1" ]; then
+ rm -f /usr/bin/caddy
+ wget https://raw.githubusercontent.com/voyku/naiveproxy/main/files/caddy-linux-$caddy_arch -O /usr/bin/caddy
+ chmod +x /usr/bin/caddy 
+elif [ $chcaddynaive == "2" ]; then
+  install_go
+  install_caddy
+fi   
+}
+
+install_go() {
+    cd /opt
+    rm /opt/go1.20.7.linux-${caddy_arch}.tar.gz -rf
+    wget https://go.dev/dl/go1.20.7.linux-${caddy_arch}.tar.gz
+    tar -zxf go1.20.7.linux-${caddy_arch}.tar.gz -C /usr/local/
+    echo export GOROOT=/usr/local/go >> /etc/profile
+    echo export PATH=$GOROOT/bin:$PATH >> /etc/profile
+    source /etc/profile
+    export GOROOT=/usr/local/go
+    export PATH=$GOROOT/bin:$PATH
+    go version
+    if [[ $? != '0' ]]; then
+        echo
+        echo "Golang安装失败，请确认机器内存>512M以及空余空间>5G"
+        exit 1
+    fi
+}
+
+install_caddy() {
+    # download caddy file then install
+    mkdir /root/src && cd /root/src/
+    go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+    ~/go/bin/xcaddy build --with github.com/caddyserver/forwardproxy@caddy2=github.com/klzgrad/forwardproxy@naive
+    rm -rf /usr/bin/caddy
+    cp caddy /usr/bin/
+    /usr/bin/caddy version        # 2022-4-8 23:09
+    #v2.4.6 h1:HGkGICFGvyrodcqOOclHKfvJC0qTU7vny/7FhYp9hNw=  
+    setcap cap_net_bind_service=+ep /usr/bin/caddy  # 设置bind权限，可443
 }
 
 installProxy(){
+    if [[ -n $(systemctl status caddy 2>/dev/null | grep -w active) && -f '/etc/caddy/Caddyfile' ]]; then
+     green "已安装naiveproxy，重装请先执行卸载功能" && exit
+    fi
+    archAffix
     if [[ ! $SYSTEM == "CentOS" ]]; then
         ${PACKAGE_UPDATE[int]}
     fi
     ${PACKAGE_INSTALL[int]} curl wget sudo qrencode
 
-    rm -f /usr/bin/caddy
-    wget https://raw.githubusercontent.com/voyku/naiveproxy/main/files/caddy-linux-$(archAffix) -O /usr/bin/caddy
-    chmod +x /usr/bin/caddy
+    get_caddy
 
-    mkdir /etc/caddy
+    mkdir /etc/caddy >/dev/null 2>&1
     
     read -rp "请输入需要用在 NaiveProxy 的端口 [回车随机分配端口]：" proxyport
     [[ -z $proxyport ]] && proxyport=$(shuf -i 2000-65535 -n 1)
@@ -91,9 +133,12 @@ installProxy(){
     done
     yellow "将用在 Caddy 监听的端口是：$caddyport"
     
+    if [ ! -f "/root/hostname" ]; then
     read -rp "请输入需要使用在 NaiveProxy 的域名：" domain
     yellow "使用在 NaiveProxy 节点的域名为：$domain"
-   
+	else
+    domain=$(cat /root/hostname)
+    fi
 
     read -rp "请输入 NaiveProxy 的用户名 [回车随机生成]：" proxyname
     [[ -z $proxyname ]] && proxyname=$(date +%s%N | md5sum | cut -c 1-16)
@@ -127,7 +172,7 @@ route {
 }
 EOF
 
-    mkdir /root/naive
+    mkdir /root/naive >/dev/null 2>&1
     cat <<EOF > /root/naive/naive-client.json
 {
   "listen": "socks://127.0.0.1:4080",
@@ -264,8 +309,8 @@ changepassword(){
 
 changeproxysite(){
     oldproxysite=$(cat /etc/caddy/Caddyfile | grep "reverse_proxy" | awk '{print $2}' | sed "s/https:\/\///g")
-    read -rp "请输入 NaiveProxy 的伪装网站地址 （去除https://） [回车世嘉maimai日本网站]：" proxysite
-    [[ -z $proxysite ]] && proxysite="maimai.sega.jp"
+    read -rp "请输入 NaiveProxy 的伪装网站地址 （去除https://） [回车日本网盘infini-cloud.net]：" proxysite
+    [[ -z $proxysite ]] && proxysite="infini-cloud.net"
 
     sed -i "s#$oldproxysite#$proxysite#g" /etc/caddy/Caddyfile
 
@@ -306,13 +351,6 @@ menu(){
     clear
     echo "#############################################################"
     echo -e "#                  ${RED}NaiveProxy  一键配置脚本${PLAIN}                 #"
-    echo -e "# ${GREEN}作者${PLAIN}: MisakaNo の 小破站                                  #"
-    echo -e "# ${GREEN}博客${PLAIN}: https://blog.misaka.rest                            #"
-    echo -e "# ${GREEN}GitHub 项目${PLAIN}: https://github.com/Misaka-blog               #"
-    echo -e "# ${GREEN}GitLab 项目${PLAIN}: https://gitlab.com/Misaka-blog               #"
-    echo -e "# ${GREEN}Telegram 频道${PLAIN}: https://t.me/misakanocchannel              #"
-    echo -e "# ${GREEN}Telegram 群组${PLAIN}: https://t.me/misakanoc                     #"
-    echo -e "# ${GREEN}YouTube 频道${PLAIN}: https://www.youtube.com/@misaka-blog        #"
     echo "#############################################################"
     echo ""
     echo -e " ${GREEN}1.${PLAIN} 安装 NaiveProxy"
