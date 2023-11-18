@@ -361,7 +361,7 @@ showconf(){
 menu(){
     clear
     echo "#############################################################"
-    echo -e "#                  ${RED}NaiveProxy  一键配置脚本${PLAIN}                 #"
+    echo -e "#                  ${GREEN}NaiveProxy  一键配置脚本${PLAIN}                 #"
     echo "#############################################################"
     echo ""
     echo -e " ${GREEN}1.${PLAIN} 安装 NaiveProxy"
