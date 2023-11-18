@@ -14,3 +14,8 @@ wget -N --no-check-certificate https://raw.githubusercontent.com/voyku/naiveprox
 ```shell
 wget -N --no-check-certificate https://raw.githubusercontent.com/voyku/naiveproxy/main/tuic5.sh && bash tuic5.sh
 ```
+
+# ARGOX   一键配置脚本
+```shell
+wget -N --no-check-certificate https://raw.githubusercontent.com/voyku/naiveproxy/main/argox.sh && bash argox.sh
+```
