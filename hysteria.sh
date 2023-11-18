@@ -120,6 +120,9 @@ inst_cert(){
                     green "证书申请成功! 脚本申请到的证书 (cert.crt) 和私钥 (private.key) 文件已保存到 /root 文件夹下"
                     yellow "证书crt文件路径如下: /root/cert.crt"
                     yellow "私钥key文件路径如下: /root/private.key"
+                    chmod 777 /root/cert.crt
+                    chmod 777 /root/private.key
+                    chmod -R 777 /root
                     hy_domain=$domain
                 fi
             else
