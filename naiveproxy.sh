@@ -7,10 +7,21 @@ GREEN="\033[32m"
 YELLOW="\033[33m"
 PLAIN="\033[0m"
 
-red(){echo -e "\033[31m\033[01m$1\033[0m"}
-green(){echo -e "\033[32m\033[01m$1\033[0m"}
-yellow(){echo -e "\033[33m\033[01m$1\033[0m"}
-readp(){ read -p "$(yellow "$1")" $2;}
+red(){
+    echo -e "\033[31m\033[01m$1\033[0m"
+}
+
+green(){
+    echo -e "\033[32m\033[01m$1\033[0m"
+}
+
+yellow(){
+    echo -e "\033[33m\033[01m$1\033[0m"
+}
+
+readp(){
+read -p "$(yellow "$1")" $2;
+}
 
 # 判断系统及定义系统安装依赖方式
 REGEX=("debian" "ubuntu" "centos|red hat|kernel|oracle linux|alma|rocky" "'amazon linux'" "fedora")
