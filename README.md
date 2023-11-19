@@ -40,6 +40,14 @@ wget -N --no-check-certificate https://raw.githubusercontent.com/voyku/naiveprox
 # MIERU   一键配置脚本
 ## 源项目
 - https://github.com/enfein/mieru
+## 下载客户端
+- https://github.com/enfein/mieru/releases/tag/v2.1.0
+### 客户端配置方法 
+##### 在其目录下，创建一个名为client_config.json的文件 ，在当前目录打开PowerShell命令行，然后输入命令 .\mieru apply config client_config.json ，然后输入.\mieru start
+![Image text](https://raw.githubusercontent.com/voyku/naiveproxy/main/img/mieru.jpg)
+### nekobox配置方法
+##### nekobox配置一个socks节点
+![Image text](https://raw.githubusercontent.com/voyku/naiveproxy/main/img/nekomieru.jpg)
 ```shell
 wget -N --no-check-certificate https://raw.githubusercontent.com/voyku/naiveproxy/main/mieru.sh && bash mieru.sh
 ```
